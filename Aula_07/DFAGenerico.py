@@ -1,5 +1,4 @@
 # Código que roda um autômato determinístico dada sua tabela de transição e configurações iniciais
-# By: Renan Babinski
 
 # Configuração instantânea do autômato
 def imprimeCI(entrada, estado, posicao):
