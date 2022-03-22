@@ -13,3 +13,13 @@ O arquivo de entrada TXT contém palavras reservadas, simbolos e operadores da l
 * Pandas
 
 ---
+
+
+### Passo a Passo do Script: ###
+
+* Carga de tokens
+* Carga GR (Gramática Regular)
+* Determinização
+* ~~Minimização~~
+* Estado de erro (Todas as células da tabela em branco)
+* Relatório (Artigo)
