@@ -18,6 +18,9 @@ def main():
 
     afnd = Afnd()
     afnd.show_table()
+    for i in range(100):
+        afnd.append_row()
+    afnd.show_table()
 
 
 def load_tokens(file:File):
