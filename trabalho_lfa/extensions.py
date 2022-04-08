@@ -37,6 +37,7 @@ class Afnd:
         self.afnd_table = pd.DataFrame(["->S'"], columns=['Ø'])
         self.afnd_table.set_index('Ø', drop=True, inplace=True)
         self.iterator = gen_alpha()
+        self.next_state = next(self.iterator)
 
     def show_table(self):
         print(self.afnd_table.to_markdown(index=True))

@@ -18,6 +18,8 @@ def main():
     load_tokens(file, afnd)
     # afnd.append_row('e', 'A', 'B')
 
+    load_gr(file, afnd)
+
     # print(afnd.afnd_table['e'].isnull()["->S'"])
 
     afnd.fill_na_values()
@@ -27,32 +29,65 @@ def main():
 
     # print(afnd.afnd_table.columns)
 
-    afd = Afd(afnd)
-    print()
-    afd.show_table()
-    print()
+    # afd = Afd(afnd)
+    # print()
+    # afd.show_table()
+    # print()
 
-    determinization(afnd, afd)
-
-
-    print('\n\n\n')
-    print("------------ AFD ------------\n")
-    afd.show_table()
+    # determinization(afnd, afd)
 
 
-    
+    # print('\n\n\n')
+    # print("------------ AFD ------------\n")
+    # afd.show_table()
+
+
+
+
+
+def load_gr(file:File, afnd:Afnd):
+    mapping = dict()
+    for line in file.get_line():
+        if line[0] != '<':
+            continue
+        line = line.strip()
+        # print(line)
+        head = ''
+        productions = []
+        head = line.split('::=')[0].strip()
+        productions = line.split('::=')[1]
+        head = head.replace("<", '')
+        head = head.replace(">", '')
+        productions = productions.split('|')
+        productions = [x.strip() for x in productions]  #Clean blank spaces
+        print(head, productions)
+
+        if head == 'S':    # First GR
+            for prod in productions:
+                # print(f"Terminal: {prod.split('<')[0]}" )
+                # print(f"Produção: {prod.split('<')[1].replace('>', '')}" )
+                terminal = prod.split('<')[0]
+                production_state = prod.split('<')[1].replace('>', '')
+                if production_state not in mapping.keys():
+                    # print(f"A produção {production_state} não está no mapeamento!")
+                    new_map = {production_state: afnd.next_state}
+                    mapping.update(new_map)
+                afnd.next_state = afnd.terminal_insert_head(terminal=terminal, current_state=mapping[production_state])
+                print(mapping)
+        else:
+            
+
+
+
 def determinization(afnd:Afnd, afd:Afd):
     afd.copy_first_row(afnd)
-    # for index in afd.afd_table.index:
-    #     print(afd.afd_table.index[0])
     i = 0
     
-
     while True:
         try:
             current_index = afd.afd_table.index[i]
         except:
-            print(f"Não foi possivel achar um inddex na posição {i}")
+            print(f"Não foi possivel achar um index na posição {i}")
             break
 
         print(current_index)
@@ -70,17 +105,17 @@ def determinization(afnd:Afnd, afd:Afd):
     
     
 def load_tokens(file:File, afnd:Afnd):
-    next_state = next(afnd.iterator)
     for line in file.get_line():
+        if line == '\n':
+            break
         line = line.strip()
         for i, terminal in enumerate(line):
             if i == 0:                # first terminal from token
-                next_state = afnd.terminal_insert_head(terminal, current_state=next_state)
-                # print(next_state)
+                afnd.next_state = afnd.terminal_insert_head(terminal, current_state=afnd.next_state)
             elif i == len(line) - 1:  # last terminal from token
-                next_state = afnd.terminal_insert_tail(terminal, current_state=next_state)
+                afnd.next_state = afnd.terminal_insert_tail(terminal, current_state=afnd.next_state)
             else:                     # middle terminal from token
-                next_state = afnd.terminal_insert_middle(terminal, current_state=next_state)
+                afnd.next_state = afnd.terminal_insert_middle(terminal, current_state=afnd.next_state)
                 # print(next_state)
 
             afnd.show_table()
