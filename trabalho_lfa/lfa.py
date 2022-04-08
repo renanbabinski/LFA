@@ -3,7 +3,7 @@
 ### Linux or Windows Power Shell
 
 import pandas as pd
-from extensions import Afnd, File
+from extensions import Afnd, File, Afd
 
 file_path = "trabalho_lfa/input.txt"
 
@@ -22,10 +22,50 @@ def main():
 
     afnd.fill_na_values()
     print('\n\n')
+    print("------------ AFND ------------\n")
     afnd.show_table()
 
+    # print(afnd.afnd_table.columns)
+
+    afd = Afd(afnd)
+    print()
+    afd.show_table()
+    print()
+
+    determinization(afnd, afd)
+
+
+    print('\n\n\n')
+    print("------------ AFD ------------\n")
+    afd.show_table()
+
+
+    
+def determinization(afnd:Afnd, afd:Afd):
+    afd.copy_first_row(afnd)
+    # for index in afd.afd_table.index:
+    #     print(afd.afd_table.index[0])
+    i = 0
     
 
+    while True:
+        try:
+            current_index = afd.afd_table.index[i]
+        except:
+            print(f"Não foi possivel achar um inddex na posição {i}")
+            break
+
+        print(current_index)
+        for value in afd.afd_table.loc[current_index]:
+            # print(value)
+            if value != '':
+                if value in afd.afd_table.index:
+                    print("Estado já está no indice!")
+                else:
+                    print("Estado ainda não está no indice!")
+                    row = pd.DataFrame()
+                    afd.merge_afnd_rows(afnd, value)
+        i += 1
 
     
     
