@@ -27,6 +27,9 @@ def increment(letter:str) -> str:
     letter = chr(ord(letter) + 1)
     return letter
 
+def transform_list(string:str):
+    # split = string.split(',')
+    return '[' + string + ']'
 
 
 class Afnd:
@@ -85,6 +88,62 @@ class Afnd:
     def fill_na_values(self):
         self.afnd_table =  self.afnd_table.fillna('')
 
+class Afd:
+    def __init__(self, afnd:Afnd) -> None:
+        columns = ['Ø']
+        for column in afnd.afnd_table.columns:
+            columns.append(column)
+        # print(columns)
+        self.afd_table = pd.DataFrame([], columns=columns)
+        self.afd_table.set_index('Ø', drop=True, inplace=True)
+        # self.iterator = gen_alpha()
+
+    def show_table(self):
+        print(self.afd_table.to_markdown(index=True))
+
+    def copy_first_row(self, afnd:Afnd):
+        columns = ['Ø']
+        values = ["->S'"]
+        for column, value in zip(afnd.afnd_table.columns, afnd.afnd_table.loc["->S'"]):
+            columns.append(column)
+            if len(value) > 1:
+                values.append(transform_list(value))
+            else:
+                values.append(value)
+            
+        row = pd.DataFrame([values], columns=columns)
+        row.set_index('Ø', drop=True, inplace=True)
+        self.afd_table = pd.concat([self.afd_table, row])
+
+    def merge_afnd_rows(self, afnd:Afnd, states):
+        print('\n MERGE DEBUG \n')
+        columns = ['Ø']
+        master_values = [states]
+        is_final = False
+        values = [None] * len(self.afd_table.columns)
+        for state in states:
+            if state not in [',', '[', ']']:
+                if state not in afnd.afnd_table.index:
+                    is_final = True
+                    state += '*'
+               
+                for i, value in enumerate(afnd.afnd_table.loc[state]):
+                    if not values[i]:
+                        values[i] = value
+                    else:
+                        values[i] += ',' + value
+                        values[i] = transform_list(values[i])
+
+        if is_final:
+            master_values[0] += '*'
+
+        master_values.extend(values)
+        columns.extend(self.afd_table.columns)
+
+        row = pd.DataFrame([master_values], columns=columns)
+        row.set_index('Ø', drop=True, inplace=True)
+        self.afd_table = pd.concat([self.afd_table, row])
+                    
 
 
 class File:
