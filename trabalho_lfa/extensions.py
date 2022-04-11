@@ -37,53 +37,74 @@ class Afnd:
         self.afnd_table = pd.DataFrame(["->S'"], columns=['Ø'])
         self.afnd_table.set_index('Ø', drop=True, inplace=True)
         self.iterator = gen_alpha()
+        self.next_state = next(self.iterator)
 
     def show_table(self):
         print(self.afnd_table.to_markdown(index=True))
 
-    def append_row(self, terminal_column=None, current_state=None, next_state=None):
-        if terminal_column:
+    def append_row(self, terminal_column=None, current_state=None, next_state=None, is_final=False):
+        if terminal_column != None and terminal_column != 'empty':
             data = {
                 'Ø': [current_state],
                 terminal_column: [next_state]
             }
-        else:
+        elif terminal_column == None or is_final:
             data = {
                 'Ø': [f"{current_state}*"]
             }
+        elif terminal_column == 'empty':
+            data = {
+                'Ø': [f"{current_state}"]
+            }
         row = pd.DataFrame(data)
         row.set_index('Ø', drop=True, inplace=True)
-        print("APPEND!")
-        print(row.to_markdown())
         self.afnd_table = pd.concat([self.afnd_table, row])
 
     def terminal_insert_head(self, terminal:str, current_state:str) ->str:
         if terminal not in self.afnd_table.columns:
-            print(f"Terminal {terminal} not in columns!")
             self.afnd_table.loc["->S'", [terminal]] = current_state
             return current_state
         else:
-            print(f"Terminal {terminal} is in columns!")
             if self.afnd_table[terminal].isnull()["->S'"]:
                 self.afnd_table.loc["->S'", [terminal]] = current_state
             else:
                 self.afnd_table.loc["->S'", [terminal]] += ',' + current_state
             return current_state
 
-    def terminal_insert_middle(self, terminal:str, current_state:str):
-        print(f"Terminal {terminal} not in columns!")
+    def terminal_insert_middle(self, terminal:str, current_state:str, is_final=False):
         next_state = next(self.iterator)
-        self.append_row(terminal, current_state, next_state)
+        self.append_row(terminal, current_state, next_state, is_final=is_final)
         return next_state
         
 
-    def terminal_insert_tail(self, terminal:str, current_state:str):
-            next_state = next(self.iterator)
-            self.append_row(terminal, current_state, next_state)
-            current_state = next_state
-            next_state = next(self.iterator)
-            self.append_row(current_state=current_state)
+    def terminal_insert_tail(self, terminal:str, current_state:str, is_final=False):
+            if is_final:
+                next_state = next(self.iterator)
+                self.append_row(terminal, current_state=current_state, is_final=is_final)
+            else:
+                next_state = next(self.iterator)
+                self.append_row(terminal, current_state, next_state)
+                current_state = next_state
+                next_state = next(self.iterator)
+                self.append_row(current_state=current_state)
+                
             return next_state
+
+    def terminal_update_prod(self, terminal:str, head_state:str, dest_state, is_final=False):
+        index_list = []
+        if is_final:
+            for index in self.afnd_table.index:
+                index_list.append(index)
+            i = index_list.index(head_state)
+            index_list[i] += '*'
+            head_state = index_list[i]
+            self.show_table()
+            self.afnd_table.index = index_list
+            self.show_table()
+        else:
+            self.afnd_table.loc[head_state, [terminal]] = dest_state
+            return head_state
+
 
     def fill_na_values(self):
         self.afnd_table =  self.afnd_table.fillna('')
@@ -116,7 +137,6 @@ class Afd:
         self.afd_table = pd.concat([self.afd_table, row])
 
     def merge_afnd_rows(self, afnd:Afnd, states):
-        print('\n MERGE DEBUG \n')
         columns = ['Ø']
         master_values = [states]
         is_final = False
