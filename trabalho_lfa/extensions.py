@@ -58,17 +58,13 @@ class Afnd:
             }
         row = pd.DataFrame(data)
         row.set_index('Ø', drop=True, inplace=True)
-        print("APPEND!")
-        print(row.to_markdown())
         self.afnd_table = pd.concat([self.afnd_table, row])
 
     def terminal_insert_head(self, terminal:str, current_state:str) ->str:
         if terminal not in self.afnd_table.columns:
-            print(f"Terminal {terminal} not in columns!")
             self.afnd_table.loc["->S'", [terminal]] = current_state
             return current_state
         else:
-            print(f"Terminal {terminal} is in columns!")
             if self.afnd_table[terminal].isnull()["->S'"]:
                 self.afnd_table.loc["->S'", [terminal]] = current_state
             else:
@@ -76,7 +72,6 @@ class Afnd:
             return current_state
 
     def terminal_insert_middle(self, terminal:str, current_state:str, is_final=False):
-        print(f"Terminal {terminal} not in columns!")
         next_state = next(self.iterator)
         self.append_row(terminal, current_state, next_state, is_final=is_final)
         return next_state
@@ -101,10 +96,8 @@ class Afnd:
             for index in self.afnd_table.index:
                 index_list.append(index)
             i = index_list.index(head_state)
-            print(i)
             index_list[i] += '*'
             head_state = index_list[i]
-            print(index_list)
             self.show_table()
             self.afnd_table.index = index_list
             self.show_table()
@@ -144,7 +137,6 @@ class Afd:
         self.afd_table = pd.concat([self.afd_table, row])
 
     def merge_afnd_rows(self, afnd:Afnd, states):
-        print('\n MERGE DEBUG \n')
         columns = ['Ø']
         master_values = [states]
         is_final = False
