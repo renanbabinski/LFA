@@ -63,19 +63,46 @@ def load_gr(file:File, afnd:Afnd):
         print(head, productions)
 
         if head == 'S':    # First GR
+            is_final = False
             for prod in productions:
                 # print(f"Terminal: {prod.split('<')[0]}" )
                 # print(f"Produção: {prod.split('<')[1].replace('>', '')}" )
-                terminal = prod.split('<')[0]
-                production_state = prod.split('<')[1].replace('>', '')
+                if '<' in prod:
+                    terminal = prod.split('<')[0]
+                    production_state = prod.split('<')[1].replace('>', '')
+                
+                else:
+                    afnd.next_state = afnd.terminal_insert_tail(terminal=prod, current_state=afnd.next_state, is_final=True)
                 if production_state not in mapping.keys():
                     # print(f"A produção {production_state} não está no mapeamento!")
                     new_map = {production_state: afnd.next_state}
                     mapping.update(new_map)
+                    afnd.next_state = afnd.terminal_insert_middle(terminal='empty', current_state=mapping[production_state], is_final=is_final)
                 afnd.next_state = afnd.terminal_insert_head(terminal=terminal, current_state=mapping[production_state])
                 print(mapping)
         else:
-            
+            if 'ε' in productions:
+                    is_final = True
+            for prod in productions:
+                if '<' in prod:
+                    terminal = prod.split('<')[0]
+                    production_state = prod.split('<')[1].replace('>', '')
+                else:
+                    pass
+
+                if production_state not in mapping.keys():
+                    # print(f"A produção {production_state} não está no mapeamento!")
+                    new_map = {production_state: afnd.next_state}
+                    mapping.update(new_map)
+                    afnd.next_state = afnd.terminal_insert_middle(terminal=None, current_state=mapping[production_state])
+                afnd.next_state = afnd.terminal_update_prod(terminal=terminal, head_state=mapping[head], dest_state=mapping[production_state])
+                # if is_final:
+                #     mapping[head] += '*'
+                is_final = False
+                
+                
+
+        print(mapping)
 
 
 
